@@ -1,14 +1,23 @@
-import os
+import os, logging
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 from dotenv import load_dotenv
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
 load_dotenv()
 
-engine = create_engine(os.getenv("DB_URL"))
+engine = create_engine(os.getenv("DB_URL"), echo=True)
 if not database_exists(engine.url):
     create_database(engine.url)
+    logging.info("[INFO] Database created successfully!")
+else:
+    logging.info("[INFO] Database already exists, connecting...")
 
 Base = declarative_base()
 
@@ -34,5 +43,7 @@ class Biodata(Base):
         }
 
 Base.metadata.create_all(bind=engine)
+logging.info("[INFO] Database tables ready!")
+
 db_session = sessionmaker(bind=engine)
 session = db_session()
